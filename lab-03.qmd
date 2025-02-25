@@ -60,8 +60,11 @@ new_cases <- daily_summary %>%
   slice(1:5)
 as_flextable(head(new_cases))
 ```
+######### ask about safe list/text report/captions ##########
+
 #Question 3
 ```{r}
-
+pop_url <- 'https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv'
+pop = read_csv(pop_url)
 ```
 
