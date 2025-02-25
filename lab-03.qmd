@@ -1,0 +1,67 @@
+---
+title: "Lab 3: COVID Wrangling"
+subtitle: "ESS 330"
+author: "Maya McCain" 
+name: \\https://mayamccain.github.io/
+email: "maya.mccain@colostate.edu"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(flextable)
+library(zoo)
+```
+#Question 1
+```{r}
+url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
+covid = read_csv(url)
+```
+
+#Question 2
+```{r}
+library(tidyverse); library(flextable)
+data = read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv')
+
+my.date <- as.Date("2022-02-01")
+class(my.date)
+
+my.state <- "Colorado"
+class(my.state)
+```
+#Question 3
+```{r}
+daily_summary <- covid %>%
+  filter(state == "Colorado") %>%
+  group_by(county) %>%
+  arrange(county, date) %>%
+  mutate(daily_new_cases = cases - lag(cases)) %>%
+  ungroup()
+head(daily_summary)
+as_flextable(head(daily_summary))
+```
+```{r}
+cumulative_cases <- daily_summary %>% 
+  filter(date == my.date) %>%
+  group_by(county) %>%
+  summarise(cumulative_cases = sum(cases)) %>%
+  arrange(-cumulative_cases) %>%
+  slice(1:5)
+as_flextable(head(cumulative_cases))
+```
+```{r}
+new_cases <- daily_summary %>% 
+  filter(date == my.date) %>%
+  group_by(county) %>%
+  summarise(new_cases = sum(daily_new_cases)) %>%
+  arrange(-new_cases) %>%
+  slice(1:5)
+as_flextable(head(new_cases))
+```
+#Question 3
+```{r}
+
+```
+
