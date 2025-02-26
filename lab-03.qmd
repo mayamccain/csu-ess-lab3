@@ -14,13 +14,16 @@ library(dplyr)
 library(flextable)
 library(zoo)
 ```
+
 #Question 1
+
 ```{r}
 url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
 covid = read_csv(url)
 ```
 
 #Question 2
+
 ```{r}
 library(tidyverse); library(flextable)
 data = read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv')
@@ -31,7 +34,9 @@ class(my.date)
 my.state <- "Colorado"
 class(my.state)
 ```
+
 #Question 3
+
 ```{r}
 daily_summary <- covid %>%
   filter(state == "Colorado") %>%
@@ -40,8 +45,10 @@ daily_summary <- covid %>%
   mutate(daily_new_cases = cases - lag(cases)) %>%
   ungroup()
 head(daily_summary)
-as_flextable(head(daily_summary))
+as_flextable(head(daily_summary)) %>% 
+flextable::set_caption("Daily Summary of Cumulative Cases")
 ```
+
 ```{r}
 cumulative_cases <- daily_summary %>% 
   filter(date == my.date) %>%
@@ -49,8 +56,10 @@ cumulative_cases <- daily_summary %>%
   summarise(cumulative_cases = sum(cases)) %>%
   arrange(-cumulative_cases) %>%
   slice(1:5)
-as_flextable(head(cumulative_cases))
+as_flextable(head(cumulative_cases)) %>% 
+flextable::set_caption("Counties with Most Cumulative COVID Cases")
 ```
+
 ```{r}
 new_cases <- daily_summary %>% 
   filter(date == my.date) %>%
@@ -58,13 +67,23 @@ new_cases <- daily_summary %>%
   summarise(new_cases = sum(daily_new_cases)) %>%
   arrange(-new_cases) %>%
   slice(1:5)
-as_flextable(head(new_cases))
+as_flextable(head(new_cases)) %>% 
+flextable::set_caption("Counties with Most New COVID Cases")
 ```
-######### ask about safe list/text report/captions ##########
 
 #Question 3
+
 ```{r}
 pop_url <- 'https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv'
-pop = read_csv(pop_url)
+pop = read_csv(pop_url) %>%
+  filter(COUNTY != "000") %>% 
+  mutate(fips = sprintf("%05s", paste0(STATE, COUNTY))) %>%  
+  right_join(covid) %>% 
+  select(fips, contains("NAME"), contains("2021")) 
 ```
-
+```{r}
+pop %>% 
+names()
+glimpse(pop)
+```
+#This dataset now has 3195 rows and 67 columns. 
