@@ -111,5 +111,6 @@ pop_joined <- read_csv(pop_url) %>%
   right_join(covid) %>% 
   select(fips, contains("NAME"), contains("2021"))
 print(pop_joined)
+            
 ```
 
