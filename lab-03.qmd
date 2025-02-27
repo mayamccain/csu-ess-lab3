@@ -81,9 +81,11 @@ pop = read_csv(pop_url) %>%
   right_join(covid) %>% 
   select(fips, contains("NAME"), contains("2021")) 
 ```
+
 ```{r}
 pop %>% 
 names()
 glimpse(pop)
 ```
-#This dataset now has 3195 rows and 67 columns. 
+
+#This dataset now has 3195 rows and 67 columns.
