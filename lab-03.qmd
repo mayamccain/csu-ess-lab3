@@ -13,6 +13,7 @@ library(tidyverse)
 library(dplyr)
 library(flextable)
 library(zoo)
+library(skimr)
 ```
 
 #Question 1
@@ -75,17 +76,40 @@ flextable::set_caption("Counties with Most New COVID Cases")
 
 ```{r}
 pop_url <- 'https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv'
-pop = read_csv(pop_url) %>%
+pop <- read_csv(pop_url) %>%
   filter(COUNTY != "000") %>% 
   mutate(fips = sprintf("%05s", paste0(STATE, COUNTY))) %>%  
-  right_join(covid) %>% 
-  select(fips, contains("NAME"), contains("2021")) 
+  select(fips, contains("NAME"), contains("2021"))
 ```
 
 ```{r}
-pop %>% 
-names()
+names(pop)
+dim(pop)
+nrow(pop)
+str(pop)
 glimpse(pop)
 ```
 
-#This dataset now has 3195 rows and 67 columns.
+## There are numeric and character atrributes in this modified dataset. The column names are the fips column and all the columns that contain "2021" or "NAME." All the column names are different from the original covid dataset except for the fips code. This dataset now has 3144 rows and 19 columns. 
+
+##What is the range of populations seen in Colorado counties in 2021:
+```{r}
+max(pop$POPESTIMATE2021, na.rm = TRUE)
+
+min(pop$POPESTIMATE2021, na.rm = TRUE)
+
+```
+## Population of Colorado counties ranged from 54 to 9,809,462 in 2021. 
+
+
+##Join the population data to the Colorado COVID data and compute the per capita cumulative cases, per capita new cases, and per capita new deaths:
+```{r}
+pop_url <- 'https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv'
+pop_joined <- read_csv(pop_url) %>%
+  filter(COUNTY != "000") %>% 
+  mutate(fips = sprintf("%05s", paste0(STATE, COUNTY))) %>%
+  right_join(covid) %>% 
+  select(fips, contains("NAME"), contains("2021"))
+print(pop_joined)
+```
+
