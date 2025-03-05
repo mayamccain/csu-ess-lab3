@@ -145,17 +145,26 @@ per_cap %>%
 
 #(Hint: Dates are numeric in R and thus operations like max min, -, +, >, and< work.)
 ```{r}
-cases_14 <- per_cap %>% 
-  filter(between(date, my.date -14, my.date)) %>% 
+cases_14 <- pop_joined %>% 
+  filter(STNAME == 'Colorado') %>% 
+  filter(between(date, my.date -13, my.date)) %>% 
   group_by(fips) %>% 
-  summarize(cases_14_days = sum(cases) / (POPESTIMATE2021[1] / 100000)) 
-print(cases_14_days)
+  summarize(tot_cases = sum(daily_new_cases),
+            pop = (POPESTIMATE2021[1] / 100000),
+    cases_14_days = sum(daily_new_cases) / (POPESTIMATE2021[1] / 100000)) 
+
+
 
 cases_14 %>% 
   inner_join(select(per_cap, fips, CTYNAME), by = "fips") %>% 
-slice_max(cases_14_days, n = 5) %>% 
-select(CTYNAME, cases_14_days) %>% 
+  filter(cases_14_days < 100) %>% 
+  flextable() %>% 
+  flextable::set_caption("Counties with Most New COVID Cases in the Last 14 days per 100,000 People")
+
+ cases_14 %>% 
+  inner_join(select(per_cap, fips, CTYNAME), by = "fips") %>% 
+  slice_max(cases_14_days, n = 5) %>% 
   flextable() %>% 
   flextable::set_caption("Counties with Most New COVID Cases in the Last 14 days per 100,000 People")
 ```
-
+#All 64 counties are on the watch list at this time, therefore there are no safe counties in Colorado. 
