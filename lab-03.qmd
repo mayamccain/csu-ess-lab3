@@ -109,24 +109,31 @@ pop_joined <- read_csv(pop_url) %>%
   filter(COUNTY != "000") %>% 
   mutate(fips = sprintf("%05s", paste0(STATE, COUNTY))) %>%
   right_join(covid) %>% 
-  select(fips, contains("NAME"), contains("2021"))
+  select(fips,  date, cases, deaths, contains("NAME"), contains("2021")) %>% 
+  group_by(fips) %>%
+  arrange(fips, date) %>%
+  mutate(daily_new_cases = cases - lag(cases)) %>%
+  ungroup()
+
 print(pop_joined)
 
 ```
 ```{r}
 per_cap <- pop_joined %>% 
-  summarize(cumulative_cases = sum(new_cases, na.rm = TRUE),
-            population = sum(POPESTIMATE2021, na.rm = TRUE)) 
-
-per_cap <- per_cap %>%
-  mutate(per_cap_cumulative = cumulative_cases / population)
-
+  filter(date == my.date) %>% 
+  mutate(per_cap_cases = cases / POPESTIMATE2021,
+         per_cap_new = daily_new_cases / POPESTIMATE2021,
+         per_cap_deaths = deaths / POPESTIMATE2021)
 print(per_cap)
-
-str(pop_joined)
-
 ```
 #Generate (2) new tables. The first should show the 5 counties with the most cumulative cases per capita on 2021-01-01, and the second should show the 5 counties with the most NEW cases per capita on the same date. Your tables should have clear column names and descriptive captions.
+```{r}
+per_cap %>% 
+  slice_max(per_cap_cases, n = 5) %>% 
+  select(CTYNAME, per_cap_cases) %>% 
+  flextable() %>% 
+  flextable::set_caption("Counties with Most Cumulative COVID Cases Per Capita")
+```
 
 ```{r}
 per_cap_cumulative <- daily_summary %>% 
