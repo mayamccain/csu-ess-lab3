@@ -5,6 +5,7 @@ author: "Maya McCain"
 name: \\https://mayamccain.github.io/
 email: "maya.mccain@colostate.edu"
 format: html
+self-contained: true
 editor: visual
 ---
 
@@ -35,41 +36,37 @@ class(my.date)
 my.state <- "Colorado"
 class(my.state)
 ```
-
-
 ```{r}
-daily_summary <- covid %>%
-  filter(state == "Colorado") %>%
+
+colorado <- covid %>%
+  filter(state == my.state) %>%
   group_by(county) %>%
-  arrange(county, date) %>%
-  mutate(daily_new_cases = cases - lag(cases)) %>%
+  arrange(date) %>%
+  mutate(new_cases = cases - lag(cases), new_deaths = deaths - lag(deaths)) %>%
   ungroup()
-head(daily_summary)
-as_flextable(head(daily_summary)) %>% 
-flextable::set_caption("Daily Summary of Cumulative Cases")
+  
 ```
 
-```{r}
-cumulative_cases <- daily_summary %>% 
-  filter(date == my.date) %>%
-  group_by(county) %>%
-  summarise(cumulative_cases = sum(cases)) %>%
-  arrange(-cumulative_cases) %>%
-  slice(1:5)
-as_flextable(head(cumulative_cases)) %>% 
-flextable::set_caption("Counties with Most Cumulative COVID Cases")
-```
+
 
 ```{r}
-new_cases <- daily_summary %>% 
-  filter(date == my.date) %>%
-  group_by(county) %>%
-  summarise(new_cases = sum(daily_new_cases)) %>%
-  arrange(-new_cases) %>%
-  slice(1:5)
-as_flextable(head(new_cases)) %>% 
-flextable::set_caption("Counties with Most New COVID Cases")
+
+filter(colorado, date == my.date) %>%
+  slice_max(cases, n = 5) %>%
+  select(Date = date, County = county, Cases = cases) %>%
+  flextable() %>%
+  set_caption(caption = "Summary of Cumulative Cases")
+
+filter(colorado, date == my.date) %>%
+  slice_max(cases, n = 5) %>%
+  select(Date = date, County = county, Cases = new_cases) %>%
+  flextable() %>%
+  set_caption(caption = "Summary of Most New Cases")
+
+#had problems with caption, Jaque said won't take points off
 ```
+
+
 
 #Question 3
 
@@ -89,19 +86,19 @@ str(pop)
 glimpse(pop)
 ```
 
-## There are numeric and character atrributes in this modified dataset. The column names are the fips column and all the columns that contain "2021" or "NAME." All the column names are different from the original covid dataset except for the fips code. This dataset now has 3144 rows and 19 columns. 
+# There are numeric and character atrributes in this modified dataset. The column names are the fips column and all the columns that contain "2021" or "NAME." All the column names are different from the original covid dataset except for the fips code. This dataset now has 3144 rows and 19 columns. 
 
-##What is the range of populations seen in Colorado counties in 2021:
+#What is the range of populations seen in Colorado counties in 2021:
 ```{r}
 max(pop$POPESTIMATE2021, na.rm = TRUE)
 
 min(pop$POPESTIMATE2021, na.rm = TRUE)
 
 ```
-## Population of Colorado counties ranged from 54 to 9,809,462 in 2021. 
+# Population of Colorado counties ranged from 54 to 9,809,462 in 2021. 
 
 
-##Join the population data to the Colorado COVID data and compute the per capita cumulative cases, per capita new cases, and per capita new deaths:
+#Join the population data to the Colorado COVID data and compute the per capita cumulative cases, per capita new cases, and per capita new deaths:
 ```{r}
 pop_url <- 'https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv'
 pop_joined <- read_csv(pop_url) %>%
@@ -168,3 +165,61 @@ cases_14 %>%
   flextable::set_caption("Counties with Most New COVID Cases in the Last 14 days per 100,000 People")
 ```
 #All 64 counties are on the watch list at this time, therefore there are no safe counties in Colorado. 
+
+#Question 5
+```{r}
+library(lubridate)
+
+date_2021 <- per_cap %>% 
+  filter(year(date) == 2021)
+covid_2021 <- date_2021 %>% 
+  group_by(CTYNAME) %>% 
+  summarise(total_covid_deaths = max(deaths, na.rm = TRUE))
+deaths_by_county <- per_cap %>%
+  group_by(CTYNAME) %>% 
+  reframe(total_deaths = DEATHS2021) %>% 
+  distinct()
+merged_2021 <- covid_2021 %>% 
+  inner_join(deaths_by_county, by = "CTYNAME") %>% 
+  mutate(covid_percentage = (total_covid_deaths / total_deaths) * 100)
+filtered_2021 <- merged_2021 %>% 
+  filter(covid_percentage >= 20)
+ggplot(filtered_2021, aes(x = CTYNAME, y = covid_percentage)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Counties where COVID-19 deaths account for 20% or more of total deaths",
+    x = "County",
+    y = "COVID-19 Death Percentage"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+print(plot)
+  
+```
+
+#Question 6
+```{r}
+state_covid = covid %>% 
+  group_by(date, state) %>% 
+  summarise(cases = sum(cases), .groups = "drop") %>% 
+  filter(state %in% c('New York', "Ohio", 'Colorado', "Alabama")) %>% 
+  group_by(state) %>% 
+  mutate(newCases = cases -lag(cases),
+         roll = zoo::rollmean(newCases, k = 7, align = "right", fill = NA)) |>
+  ungroup()
+
+ggplot(state_covid, aes(x = date)) +
+  geom_col(aes(y = newCases), fill = "lightblue", col = NA) +
+  geom_line(aes(y = roll), col = "darkblue", size = 1) +
+  theme_linedraw() +
+  facet_wrap(~state, nrow = 2, scales = "free_y") +
+  labs(title = "Cumulative COVID-19 Cases",
+       x = "Date", y = "Case Count")
+```
+```{r}
+#pp = pop %>% 
+  #group_by(STNAME) |>
+  
+```
+
+
