@@ -226,4 +226,38 @@ pp = pop %>%
   ungroup()
 ```
 
+```{r}
+ggplot(pp, aes(x = date)) +
+  geom_line(aes(y = roll, col = STNAME), size = 1) +
+  theme_linedraw() +
+  labs(title = "Cumulative COVID-19 Cases",
+       x = "Date", y = "Case Count")
+```
+
+#Briefly describe the influence scaling by population had on the analysis? Does it make some states look better? Some worse? How so?
+
+#Scaling by population made the data analysis more accurate because it created a better proportion of deaths versus population. In lower population states, deaths from COVID made the state look worse because the death rate in comparison to population was extremely high. This made it seem like these lower population states were hit way harder by COVID than higher population states. In high poopulation states, scaling by population may make the state look better because they have a higher amount of deaths in general in comparison to just COVID deaths. 
+
 #Question 7
+
+```{r}
+meta = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv') %>% 
+  inner_join(covid) %>% 
+  group_by(date) %>% 
+  summarise(wmX_c = sum(LON*cases) / sum(cases),
+            wmY_c = sum(LAT*cases) / sum(cases),
+            cases = sum(cases)) %>% 
+  arrange(date) |>
+  mutate(d = 1:n())
+
+ggplot(meta) +
+  borders("state", fill = "gray90", colour = "white") +
+  geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "red", alpha = .25) +
+  theme_linedraw() +
+  labs(color = "Time",
+       size = "Cases",
+       x = "", y = "",
+       title = "Weighted Center of COVID-19 Cases") +
+  theme(legend.position = "none")
+```
+
