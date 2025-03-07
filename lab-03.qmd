@@ -180,9 +180,9 @@ percent_deaths <- colorado %>%
   filter(year == 2021) %>% 
   group_by(fips) %>% 
   summarise(deaths = sum(new_deaths)) %>% 
-  left_join(pop, by = "fips") %>% 
+  left_join(pop, c("fips")) %>% 
   mutate(covid_percentage = (deaths / DEATHS2021 * 100)) %>% 
-  select(CTYNAME, deaths, covid_percentage) %>% 
+  select(CTYNAME, deaths, covid_percentage, DEATHS2021) %>% 
   filter(covid_percentage >= 20)
 
 percentage_deaths_plot <- ggplot(percent_deaths, aes(x = CTYNAME, y = covid_percentage)) +
