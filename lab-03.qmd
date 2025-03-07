@@ -167,34 +167,33 @@ cases_14 %>%
 #All 64 counties are on the watch list at this time, therefore there are no safe counties in Colorado. 
 
 #Question 5
+
 ```{r}
 library(lubridate)
+tmp.date = as.Date("2021-02-01")
+lubridate::year(tmp.date)
+lubridate::month(tmp.date)
+lubridate::yday(tmp.date)
 
-date_2021 <- per_cap %>% 
-  filter(year(date) == 2021)
-covid_2021 <- date_2021 %>% 
-  group_by(CTYNAME) %>% 
-  summarise(total_covid_deaths = max(deaths, na.rm = TRUE))
-deaths_by_county <- per_cap %>%
-  group_by(CTYNAME) %>% 
-  reframe(total_deaths = DEATHS2021) %>% 
-  distinct()
-merged_2021 <- covid_2021 %>% 
-  inner_join(deaths_by_county, by = "CTYNAME") %>% 
-  mutate(covid_percentage = (total_covid_deaths / total_deaths) * 100)
-filtered_2021 <- merged_2021 %>% 
+percent_deaths <- colorado %>% 
+  mutate(year = lubridate::year(date)) %>% 
+  filter(year == 2021) %>% 
+  group_by(fips) %>% 
+  summarise(deaths = sum(new_deaths)) %>% 
+  left_join(pop, by = "fips") %>% 
+  mutate(covid_percentage = (deaths / DEATHS2021 * 100)) %>% 
+  select(CTYNAME, deaths, covid_percentage) %>% 
   filter(covid_percentage >= 20)
-ggplot(filtered_2021, aes(x = CTYNAME, y = covid_percentage)) +
-  geom_bar(stat = "identity") +
+
+percentage_deaths_plot <- ggplot(percent_deaths, aes(x = CTYNAME, y = covid_percentage)) +
+  geom_col(aes(y = covid_percentage)) +
   labs(
     title = "Counties where COVID-19 deaths account for 20% or more of total deaths",
     x = "County",
     y = "COVID-19 Death Percentage"
   ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-print(plot)
-  
+  theme_minimal()
+print(percentage_deaths_plot)
 ```
 
 #Question 6
