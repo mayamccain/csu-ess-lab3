@@ -217,9 +217,14 @@ ggplot(state_covid, aes(x = date)) +
        x = "Date", y = "Case Count")
 ```
 ```{r}
-#pp = pop %>% 
-  #group_by(STNAME) |>
-  
+pp = pop %>% 
+  group_by(STNAME) |>
+  summarise(state_pop = sum(POPESTIMATE2021)) |>
+  inner_join(state_covid, by = c("STNAME"="state")) %>% 
+  mutate(perCap = newCases / state_pop) %>% 
+  group_by(STNAME) %>% 
+  mutate(roll = zoo::rollmean(perCap, k = 7, align = "right", fill = NA)) %>% 
+  ungroup()
 ```
 
-
+#Question 7
