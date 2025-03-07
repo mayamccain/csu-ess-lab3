@@ -241,6 +241,7 @@ ggplot(pp, aes(x = date)) +
 #Question 7
 
 ```{r}
+library(maps)
 meta = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv') %>% 
   inner_join(covid) %>% 
   group_by(date) %>% 
@@ -251,8 +252,8 @@ meta = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/ref
   mutate(d = 1:n())
 
 ggplot(meta) +
-  borders("state", fill = "gray90", colour = "white") +
-  geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "red", alpha = .25) +
+  borders("state", fill = "lightblue", colour = "white") +
+  geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "darkblue", alpha = .25) +
   theme_linedraw() +
   labs(color = "Time",
        size = "Cases",
@@ -260,4 +261,8 @@ ggplot(meta) +
        title = "Weighted Center of COVID-19 Cases") +
   theme(legend.position = "none")
 ```
+#In a few sentences, describe the movement of the COVID-19 weighted mean throughout the USA and possible drivers of its movement given your knowledge of the outbreak hot spots.
 
+#The COVID-19 weighted mean moved throughout the US with a concentration in the midwest and southern US. There are a few places in the western US that demostrate the movement of the weighted mean, most likey starting from the hotspots in the midwest and moving west. The movement was most likely driven by travel and high population areas/cities that fostered the spread of the virus. The hot spots may also be caused by the lack of mask-wearing or following recommended guidelines to fight the spread of the virus.
+
+#Question 8 
