@@ -266,6 +266,8 @@ ggplot(meta) +
 
 #Question 8 
 ```{r}
+library(ggplot2)
+library(patchwork)
 meta = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv')
 # Compute weighted mean center for COVID-19 cases
 cases_meta <- meta %>% 
@@ -301,7 +303,7 @@ p_deaths <- ggplot(deaths_meta) +
   theme_linedraw() +
   labs(title = "Weighted Center of COVID-19 Deaths", x = "", y = "", size = "Deaths") +
   theme(legend.position = "none")
-p_cases | p_deaths
+(p_cases | p_deaths)
 ```
 #Once completed describe the differences in the plots and what they mean about the spatial patterns seen with COVID impacts.
 
