@@ -37,7 +37,6 @@ my.state <- "Colorado"
 class(my.state)
 ```
 ```{r}
-
 colorado <- covid %>%
   filter(state == my.state) %>%
   group_by(county) %>%
@@ -266,3 +265,45 @@ ggplot(meta) +
 #The COVID-19 weighted mean moved throughout the US with a concentration in the midwest and southern US. There are a few places in the western US that demostrate the movement of the weighted mean, most likey starting from the hotspots in the midwest and moving west. The movement was most likely driven by travel and high population areas/cities that fostered the spread of the virus. The hot spots may also be caused by the lack of mask-wearing or following recommended guidelines to fight the spread of the virus.
 
 #Question 8 
+```{r}
+meta = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv')
+# Compute weighted mean center for COVID-19 cases
+cases_meta <- meta %>% 
+  inner_join(per_cap, by = "fips") %>% 
+  group_by(date) %>% 
+  summarise(
+    wmX_cases = sum(LON * daily_new_cases) / sum(daily_new_cases),
+    wmY_cases = sum(LAT * daily_new_cases) / sum(daily_new_cases),
+    cases = sum(daily_new_cases)
+  ) %>% 
+  arrange(date)
+
+deaths_meta <- meta %>% 
+  inner_join(colorado, by = "fips") %>% 
+  group_by(date) %>% 
+  summarise(
+    wmX_deaths = sum(LON * new_deaths, na.rm = TRUE) / sum(new_deaths, na.rm = TRUE),
+    wmY_deaths = sum(LAT * new_deaths, na.rm = TRUE) / sum(new_deaths, na.rm = TRUE),
+    deaths = sum(new_deaths, na.rm = TRUE)
+  ) %>% 
+  arrange(date)
+
+p_cases <- ggplot(cases_meta) +
+  borders("state", fill = "lightblue", colour = "white") +
+  geom_point(aes(x = wmX_cases, y = wmY_cases, size = cases), color = "red", alpha = 0.5) +
+  theme_linedraw() +
+  labs(title = "Weighted Center of COVID-19 Cases", x = "", y = "", size = "Cases") +
+  theme(legend.position = "none")
+
+p_deaths <- ggplot(deaths_meta) +
+  borders("state", fill = "lightblue", colour = "white") +
+  geom_point(aes(x = wmX_deaths, y = wmY_deaths, size = deaths), color = "navy", alpha = 0.5) +
+  theme_linedraw() +
+  labs(title = "Weighted Center of COVID-19 Deaths", x = "", y = "", size = "Deaths") +
+  theme(legend.position = "none")
+p_cases | p_deaths
+```
+#Once completed describe the differences in the plots and what they mean about the spatial patterns seen with COVID impacts.
+
+#The weighted center of daily cases only has one apparent point while the deaths plot has a large concentrated area. However, they are both in the same area of the United States. This may signify different reactions to COVID protocols throughout the United States, which could have an effect on new cases and deaths caused by COVID.
+
